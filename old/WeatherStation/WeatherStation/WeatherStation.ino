@@ -3,10 +3,14 @@
  Created:	16.03.2018 10:56:18
  Author:	Frank Schmitz
 */
+#include "DHT.h"
 
-int CurrentFilter = 0;
+#define DHTPIN 2     // what pin we're connected to
+#define DHTTYPE DHT22   // DHT 22  (AM2302)
+
 double AmbientTemp = 12.3421;
 double AmbientHumidity = 67.3421;
+int RainState = 1024;
 
 // the setup function runs once when you press reset or power the board
 void setup() {
@@ -17,6 +21,11 @@ void setup() {
 
 // the loop function runs over and over again until power down or reset
 void loop() {
+
+	// Read Rainstate
+	int val = analogRead(A0);
+
+
 	String cmd;
 
 	if (Serial.available() > 0) {
