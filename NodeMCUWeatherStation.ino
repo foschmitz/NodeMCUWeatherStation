@@ -8,6 +8,9 @@
 #define DHTPIN 2     // what pin we're connected to
 #define DHTTYPE DHT22   // DHT 22  (AM2302)
 
+#define WRITE Serial
+#define READ Serial
+
 double AmbientTemp = 12.3421;
 double AmbientHumidity = 67.3421;
 double RainState = 0;
@@ -15,65 +18,63 @@ int ScaleMaxMM = 80;
 
 DHT dht(DHTPIN, DHTTYPE);
 
-// the setup function runs once when you press reset or power the board
 void setup() {
 	Serial.begin(57600);
 	Serial.flush();
 	pinMode(LED_BUILTIN, OUTPUT);
 }
 
-// the loop function runs over and over again until power down or reset
+
+void Humidity()
+{
+  WRITE.println(dht.readHumidity());
+}
+
+void RainDetect()
+{
+  WRITE.println((1-analogRead(A0)/1024.0f)*ScaleMaxMM);
+}
+
+void Temperature()
+{
+  if (dht.readTemperature()) { 
+    WRITE.println(dht.readTemperature());
+  } else {
+    WRITE.println("");
+  }
+}
+
 void loop() {
 
-  delay(2000);
-  
-  // Read Rainstate
-  int val = analogRead(A0);
-  RainState = (1-val/1024)*ScaleMaxMM;
-  AmbientTemp = dht.readTemperature();
-  AmbientHumidity = dht.readHumidity();
 
-  Serial.print("Humidity: "); 
-  Serial.print(AmbientHumidity);
-  Serial.print(" %\t");
-  Serial.print("Temperature: "); 
-  Serial.print(AmbientTemp);
-  Serial.print(" %\t");
-  Serial.print("RainState: "); 
-  Serial.print(RainState);
-  Serial.println(" *C ");
-  
-  // Check if any reads failed and exit early (to try again).
-  if (isnan(AmbientHumidity) || isnan(AmbientTemp) || isnan(RainState)) {
-    Serial.println("Failed to read from DHT sensor!");
-    return;
-  }
-  
-  String cmd;
-	if (Serial.available() > 0) {
-		cmd = Serial.readStringUntil('#');
-		if (cmd == "GETHUMIDITY") {
-			char TempString[10];
-			dtostrf(AmbientHumidity, 2, 2, TempString);
-			Serial.print(String(TempString));
-			Serial.println("#");
+  String command = "";
+  if (READ.available() > 0) {
+    command = READ.readStringUntil('\n');
+
+		if (command.equalsIgnoreCase("H")) {
+			Humidity();
 		}
-		else if (cmd == "GETTEMPERATURE") {
-			char TempString[10];  //  Hold The Convert Data
-			dtostrf(AmbientTemp, 2, 2, TempString);
-			Serial.print(String(TempString));
-			Serial.println("#");
+		else if (command.equalsIgnoreCase("T")) {
+			Temperature();
 		}
-		else if (cmd == "GETRAINSTATE") {
-      char TempString[10];  //  Hold The Convert Data
-      dtostrf(RainState, 2, 2, TempString);
-      Serial.print(String(TempString));
-      Serial.println("#");
+		else if (command.equalsIgnoreCase("RR")) {
+      RainDetect();
     }
-	}
-  
-  
-  
+    else if (command.equalsIgnoreCase("PRINTWEATHER")) {
+      WRITE.println("*********************");
+      
+      WRITE.print("H: ");
+      Humidity();
+      
+      WRITE.print("T: ");
+      Temperature();
+      
+      WRITE.print("RR: ");
+      RainDetect();
+      
+      WRITE.println("*********************");
 
+    }
+  }
   
 }
