@@ -8,8 +8,8 @@
 DHTesp dht;
 
 // Replace with your network credentials
-const char* ssid     = "MEGAJONK";
-const char* password = "kippe123";
+const char* ssid     = "JONK";
+const char* password = "*********";
 
 // Set web server port number to 80
 WiFiServer server(80);
@@ -73,7 +73,7 @@ void setup() {
 
 void loop(){
   WiFiClient client = server.available();   // Listen for incoming clients
-  
+
   String command = "";
   if (Serial.available() > 0) {
     command = Serial.readStringUntil('\n');
@@ -156,7 +156,18 @@ void loop(){
             } else {
               client.println("<p><a href=\"/1/off\"><button class=\"button button2\">OFF</button></a></p>");
             } 
-               
+            Serial.println("Writing page...");
+            RainDetect();
+            if ((1-analogRead(A0)/1024.0f)*ScaleMaxMM > 1) {
+                client.println("<p>It's raining!!!!!</p>");
+            } else {
+                client.println("<p>It's dry!!!!!</p>");
+            }
+            
+            
+         /*   client.print("<p>RAINRATE: ");
+            client.print((1-analogRead(A0)/1024.0f)*ScaleMaxMM);
+            client.println("</p>"); */
             client.println("</body></html>");
             
             // The HTTP response ends with another blank line
