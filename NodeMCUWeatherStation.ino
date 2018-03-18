@@ -1,16 +1,15 @@
-
-// Load Wi-Fi library
+#include <DHTesp.h>
 #include <ESP8266WiFi.h>
-#include "DHT.h"
+
 
 #define DHTPIN 2     // what pin we're connected to
-#define DHTTYPE DHT22   // DHT 22  (AM2302)
+#define DHTTYPE DHTesp::DHT22   // DHT 22  (AM2302)
 
-DHT dht(DHTPIN, DHTTYPE);
+DHTesp dht;
 
 // Replace with your network credentials
 const char* ssid     = "MEGAJONK";
-const char* password = "***********";
+const char* password = "kippe123";
 
 // Set web server port number to 80
 WiFiServer server(80);
@@ -28,7 +27,7 @@ int ScaleMaxMM = 80;
 
 void Humidity()
 {
-  Serial.println(dht.readHumidity());
+  Serial.println(dht.getHumidity());
 }
 
 void RainDetect()
@@ -38,8 +37,8 @@ void RainDetect()
 
 void Temperature()
 {
-  if (dht.readTemperature()) { 
-    Serial.println(dht.readTemperature());
+  if (dht.getTemperature()) { 
+    Serial.println(dht.getTemperature());
   } else {
     Serial.println("");
   }
@@ -47,6 +46,10 @@ void Temperature()
 
 void setup() {
   Serial.begin(115200);
+  
+  dht.setup(DHTPIN, DHTTYPE);
+  Serial.println("DHT initiated");
+  
   // Initialize the led variables as outputs
   pinMode(LED_BUILTIN, OUTPUT);
   // Set outputs to LOW
